@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Desafio dos 200 Depósitos - R$ 20.100,00</title>
+    <style>
+        :root {
+            --bg-primary: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-card: #0f3460;
+            --text-primary: #e0e0e0;
+            --text-secondary: #a0a0a0;
+            --accent-green: #00c853;
+            --accent-gold: #ffd700;
+            --accent-blue: #2196f3;
+            --danger: #ff4444;
+            --border-radius: 8px;
+            --shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 20px;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            padding: 30px 0;
+            background: var(--bg-card);
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            color: var(--accent-gold);
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .header .total {
+            font-size: 1.5em;
+            color: var(--accent-green);
+            font-weight: bold;
+        }
+
+        /* Progress Panel */
+        .progress-panel {
+            background: var(--bg-card);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        .progress-bar-container {
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            height: 30px;
+            margin: 15px 0;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #00c853, #69f0ae);
+            border-radius: 10px;
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #000;
+            font-weight: bold;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .stat-card {
+            background: var(--bg-secondary);
+            padding: 15px;
+            border-radius: var(--border-radius);
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: var(--accent-gold);
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.9em;
+        }
+
+        /* Controls */
+        .controls {
+            background: var(--bg-card);
+            padding: 15px;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .btn.active {
+            background: var(--accent-blue);
+            color: white;
+        }
+
+        .btn.export {
+            background: #ff6f00;
+            color: white;
+        }
+
+        .btn.import {
+            background: #4a148c;
+            color: white;
+        }
+
+        .search-input {
+            padding: 10px;
+            border-radius: var(--border-radius);
+            border: 1px solid var(--text-secondary);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            flex: 1;
+            min-width: 200px;
+        }
+
+        /* Grid */
+        .grid-container {
+            background: var(--bg-card);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        .deposit-grid {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            gap: 8px;
+        }
+
+        .deposit-cell {
+            aspect-ratio: 1;
+            border: 2px solid rgba(255,255,255,0.1);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-size: 0.9em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 5px;
+            position: relative;
+        }
+
+        .deposit-cell:hover {
+            transform: scale(1.05);
+            z-index: 10;
+            box-shadow: 0 0 15px rgba(255,255,255,0.3);
+        }
+
+        .deposit-cell.completed {
+            background: linear-gradient(135deg, #00c853, #69f0ae);
+            color: #000;
+            border-color: #00c853;
+        }
+
+        .deposit-cell.completed-today {
+            background: linear-gradient(135deg, #ffd700, #ffed4a);
+            color: #000;
+            border-color: #ffd700;
+            box-shadow: 0 0 15px rgba(255,215,0,0.8);
+            animation: glow 2s ease-in-out infinite;
+        }
+
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 15px rgba(255,215,0,0.8); }
+            50% { box-shadow: 0 0 25px rgba(255,215,0,1); }
+        }
+
+        /* History Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: var(--bg-card);
+            padding: 30px;
+            border-radius: var(--border-radius);
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .close-btn {
+            float: right;
+            cursor: pointer;
+            font-size: 1.5em;
+            color: var(--text-secondary);
+        }
+
+        .history-item {
+            padding: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* Confetti */
+        .confetti {
+            position: fixed;
+            pointer-events: none;
+            z-index: 999;
+            animation: confettiFall 1s ease-out forwards;
+        }
+
+        @keyframes confettiFall {
+            to {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
+        /* Motivational */
+        .motivational {
+            text-align: center;
+            padding: 15px;
+            font-style: italic;
+            color: var(--accent-gold);
+            font-size: 1.1em;
+        }
+
+        /* Badges */
+        .badges {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .badge {
+            background: var(--accent-gold);
+            color: #000;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+
+        .streak {
+            color: #ff6f00;
+            font-weight: bold;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .deposit-grid {
+                grid-template-columns: repeat(10, 1fr);
+                gap: 4px;
+            }
+            
+            .deposit-cell {
+                font-size: 0.7em;
+            }
+            
+            .header h1 {
+                font-size: 1.8em;
+            }
+            
+            .controls {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🏆 DESAFIO DOS 200 DEPÓSITOS</h1>
+            <div class="total">R$ 20.100,00</div>
+        </div>
+
+        <!-- Progress Panel -->
+        <div class="progress-panel">
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="progressBar" style="width: 0%">0%</div>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="completedCount">0</div>
+                    <div class="stat-label">de 200 depósitos</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="totalValue">R$ 0,00</div>
+                    <div class="stat-label">Total acumulado</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="remaining">R$ 20.100,00</div>
+                    <div class="stat-label">Faltando</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="streak">0 🔥</div>
+                    <div class="stat-label">Dias consecutivos</div>
+                </div>
+            </div>
+            <div class="motivational" id="motivationalText">
+                Vamos começar! Faça o primeiro depósito! 💪
+            </div>
+            <div class="badges" id="badgesContainer"></div>
+        </div>
+
+        <!-- Controls -->
+        <div class="controls">
+            <button class="btn active" onclick="setFilter('all')">Todos</button>
+            <button class="btn" onclick="setFilter('pending')">Pendentes</button>
+            <button class="btn" onclick="setFilter('completed')">Concluídos</button>
+            <button class="btn" onclick="setFilter('today')">Depósitos Hoje</button>
+            <input type="number" class="search-input" id="searchInput" placeholder="Buscar número..." min="1" max="200" oninput="searchDeposit()">
+            <button class="btn" onclick="showHistory()">📋 Histórico</button>
+            <button class="btn export" onclick="exportData()">💾 Exportar</button>
+            <button class="btn import" onclick="importData()">📥 Importar</button>
+        </div>
+
+        <!-- Deposit Grid -->
+        <div class="grid-container">
+            <div class="deposit-grid" id="depositGrid"></div>
+        </div>
+    </div>
+
+    <!-- History Modal -->
+    <div class="modal" id="historyModal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeHistory()">&times;</span>
+            <h2>Histórico de Depósitos</h2>
+            <div id="historyContent"></div>
+        </div>
+    </div>
+
+    <script>
+        // State Management
+        let deposits = {};
+        let currentFilter = 'all';
+        const TOTAL_DEPOSITS = 200;
+        const TOTAL_VALUE = 20100;
+
+        // Load data from localStorage
+        function loadData() {
+            const saved = localStorage.getItem('deposits200');
+            if (saved) {
+                deposits = JSON.parse(saved);
+            }
+        }
+
+        // Save data to localStorage
+        function saveData() {
+            localStorage.setItem('deposits200', JSON.stringify(deposits));
+            updateUI();
+        }
+
+        // Get today's date string
+        function getTodayString() {
+            return new Date().toISOString().split('T')[0];
+        }
+
+        // Toggle deposit
+        function toggleDeposit(number) {
+            const today = getTodayString();
+            
+            if (deposits[number]) {
+                // Already deposited - confirm removal
+                if (confirm(`Deseja desmarcar o depósito #${number} de R$ ${number},00?`)) {
+                    delete deposits[number];
+                    saveData();
+                }
+            } else {
+                // New deposit
+                const now = new Date();
+                deposits[number] = {
+                    date: now.toISOString(),
+                    value: number
+                };
+                
+                // Play sound effect
+                playCoinSound();
+                
+                // Create confetti
+                createConfetti();
+                
+                // Check for badges
+                checkBadges();
+                
+                saveData();
+            }
+        }
+
+        // Play simple coin sound
+        function playCoinSound() {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+            oscillator.frequency.exponentialRampToValueAtTime(400, audioContext.currentTime + 0.1);
+            
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.3);
+        }
+
+        // Create confetti effect
+        function createConfetti() {
+            const colors = ['#ffd700', '#00c853', '#ff6f00', '#2196f3', '#ff4081'];
+            for (let i = 0; i < 30; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + '%';
+                    confetti.style.top = -10 + 'px';
+                    confetti.style.width = '10px';
+                    confetti.style.height = '10px';
+                    confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+                    document.body.appendChild(confetti);
+                    
+                    setTimeout(() => confetti.remove(), 1000);
+                }, i * 20);
+            }
+        }
+
+        // Check and award badges
+        function checkBadges() {
+            const completedCount = Object.keys(deposits).length;
+            const badges = [];
+            
+            if (completedCount >= 1) badges.push('🥇 Primeiro Depósito');
+            if (completedCount >= 50) badges.push('🎯 50 Depósitos');
+            if (completedCount >= 100) badges.push('🏆 100 Depósitos!');
+            if (completedCount >= 150) badges.push('🚀 Reta Final!');
+            if (completedCount >= 200) badges.push('👑 DESAFIO COMPLETO!');
+            
+            const badgesContainer = document.getElementById('badgesContainer');
+            badgesContainer.innerHTML = badges.map(b => `<span class="badge">${b}</span>`).join('');
+        }
+
+        // Calculate streak
+        function calculateStreak() {
+            if (Object.keys(deposits).length === 0) return 0;
+            
+            const dates = Object.values(deposits)
+                .map(d => d.date.split('T')[0])
+                .sort()
+                .reverse();
+            
+            let streak = 1;
+            const today = new Date();
+            
+            for (let i = 0; i < dates.length - 1; i++) {
+                const current = new Date(dates[i]);
+                const previous = new Date(dates[i + 1]);
+                const diffTime = current - previous;
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                
+                if (diffDays === 1) {
+                    streak++;
+                } else {
+                    break;
+                }
+            }
+            
+            return streak;
+        }
+
+        // Get motivational text
+        function getMotivationalText(progress) {
+            if (progress === 0) return "Vamos começar! Faça o primeiro depósito! 💪";
+            if (progress < 25) return "Ótimo começo! Continue assim! 🚀";
+            if (progress < 50) return "Você está no caminho certo! Não pare agora! ⭐";
+            if (progress < 75) return "Metade do caminho! Que dedicação! 🎯";
+            if (progress < 100) return "Quase lá! A reta final é agora! 🔥";
+            return "PARABÉNS! Desafio completo! Você é incrível! 👑🎉";
+        }
+
+        // Update UI
+        function updateUI() {
+            const completed = Object.keys(deposits).length;
+            const totalDeposited = Object.values(deposits).reduce((sum, d) => sum + d.value, 0);
+            const remaining = TOTAL_VALUE - totalDeposited;
+            const progress = (completed / TOTAL_DEPOSITS) * 100;
+            const streak = calculateStreak();
+            
+            // Update stats
+            document.getElementById('completedCount').textContent = completed;
+            document.getElementById('totalValue').textContent = `R$ ${totalDeposited.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+            document.getElementById('remaining').textContent = `R$ ${remaining.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+            document.getElementById('streak').textContent = `${streak} 🔥`;
+            
+            // Update progress bar
+            const progressBar = document.getElementById('progressBar');
+            progressBar.style.width = `${progress}%`;
+            progressBar.textContent = `${progress.toFixed(1)}%`;
+            
+            // Update motivational text
+            document.getElementById('motivationalText').textContent = getMotivationalText(progress);
+            
+            // Update badges
+            checkBadges();
+            
+            // Update grid
+            renderGrid();
+        }
+
+        // Render deposit grid
+        function renderGrid() {
+            const grid = document.getElementById('depositGrid');
+            const today = getTodayString();
+            grid.innerHTML = '';
+            
+            for (let i = 1; i <= TOTAL_DEPOSITS; i++) {
+                const cell = document.createElement('button');
+                cell.className = 'deposit-cell';
+                cell.textContent = i;
+                
+                const isCompleted = !!deposits[i];
+                const isToday = isCompleted && deposits[i].date.startsWith(today);
+                
+                if (isToday) {
+                    cell.classList.add('completed-today');
+                } else if (isCompleted) {
+                    cell.classList.add('completed');
+                }
+                
+                // Apply filter
+                if (currentFilter === 'completed' && !isCompleted) {
+                    cell.style.display = 'none';
+                } else if (currentFilter === 'pending' && isCompleted) {
+                    cell.style.display = 'none';
+                } else if (currentFilter === 'today' && !isToday) {
+                    cell.style.display = 'none';
+                }
+                
+                cell.onclick = () => toggleDeposit(i);
+                grid.appendChild(cell);
+            }
+        }
+
+        // Filter functions
+        function setFilter(filter) {
+            currentFilter = filter;
+            
+            // Update active button
+            document.querySelectorAll('.btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            renderGrid();
+        }
+
+        // Search deposit
+        function searchDeposit() {
+            const searchValue = parseInt(document.getElementById('searchInput').value);
+            if (searchValue >= 1 && searchValue <= TOTAL_DEPOSITS) {
+                const cells = document.querySelectorAll('.deposit-cell');
+                cells.forEach((cell, index) => {
+                    if (index + 1 === searchValue) {
+                        cell.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        cell.style.border = '3px solid #ffd700';
+                        setTimeout(() => cell.style.border = '', 2000);
+                    }
+                });
+            }
+        }
+
+        // History modal
+        function showHistory() {
+            const modal = document.getElementById('historyModal');
+            const content = document.getElementById('historyContent');
+            
+            const historyItems = Object.entries(deposits)
+                .sort((a, b) => new Date(b[1].date) - new Date(a[1].date))
+                .map(([number, data]) => {
+                    const date = new Date(data.date);
+                    return `
+                        <div class="history-item">
+                            <span>Depósito #${number}</span>
+                            <span>R$ ${data.value},00</span>
+                            <span>${date.toLocaleDateString('pt-BR')} ${date.toLocaleTimeString('pt-BR')}</span>
+                        </div>
+                    `;
+                }).join('');
+            
+            content.innerHTML = historyItems || '<p>Nenhum depósito realizado ainda.</p>';
+            modal.style.display = 'flex';
+        }
+
+        function closeHistory() {
+            document.getElementById('historyModal').style.display = 'none';
+        }
+
+        // Export/Import functions
+        function exportData() {
+            const data = {
+                deposits: deposits,
+                exportDate: new Date().toISOString(),
+                version: '1.0'
+            };
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `desafio-200-depositos-backup-${getTodayString()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function importData() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            
+            input.onchange = (e) => {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+                
+                reader.onload = (event) => {
+                    try {
+                        const data = JSON.parse(event.target.result);
+                        if (data.deposits) {
+                            if (confirm('Isso substituirá todos os dados atuais. Continuar?')) {
+                                deposits = data.deposits;
+                                saveData();
+                                alert('Dados importados com sucesso!');
+                            }
+                        } else {
+                            alert('Arquivo inválido!');
+                        }
+                    } catch (error) {
+                        alert('Erro ao ler o arquivo!');
+                    }
+                };
+                
+                reader.readAsText(file);
+            };
+            
+            input.click();
+        }
+
+        // Daily suggestion notification
+        function showDailySuggestion() {
+            const today = new Date().getDate();
+            if (today <= TOTAL_DEPOSITS && !deposits[today]) {
+                setTimeout(() => {
+                    if (confirm(`Hoje é dia ${today}! Que tal fazer o depósito #${today} de R$ ${today},00?`)) {
+                        toggleDeposit(today);
+                    }
+                }, 2000);
+            }
+        }
+
+        // Close modal on outside click
+        window.onclick = function(event) {
+            const modal = document.getElementById('historyModal');
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        // Initialize app
+        function init() {
+            loadData();
+            updateUI();
+            showDailySuggestion();
+            
+            // Set up daily notification (if supported)
+            if ('Notification' in window && Notification.permission === 'default') {
+                Notification.requestPermission();
+            }
+            
+            // Auto-save every 30 seconds
+            setInterval(() => {
+                const currentData = JSON.stringify(deposits);
+                const savedData = localStorage.getItem('deposits200');
+                if (currentData !== savedData) {
+                    saveData();
+                }
+            }, 30000);
+        }
+
+        // Start the app
+        init();
+    </script>
+</body>
+</html>
